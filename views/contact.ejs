@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1><%= title %></h1>
+      <p><%= message %></p>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/contact">Contact</a>
+      </nav>
+    </header>
+
+    <main class="content">
+      <div class="image-section">
+        <img src="/images/contact-image.svg" alt="Contact Page Image">
+      </div>
+
+      <div class="text-section">
+        <h2>Contact Information</h2>
+        <p>
+          We'd love to hear from you! Whether you have a question about features, 
+          pricing, need a demo, or anything else, our team is ready to answer all your questions.
+        </p>
+        <p>
+          Fill out the form below and we'll get back to you as soon as possible. 
+          This server uses CORS middleware to handle cross-origin requests securely.
+        </p>
+        <p>
+          <strong>Note:</strong> All form submissions are logged to the server console 
+          and returned as JSON responses, demonstrating the server's API capabilities.
+        </p>
+      </div>
+
+      <div class="form-section">
+        <h2>Contact Form</h2>
+        <form id="contactForm">
+          <div class="form-group">
+            <label for="fullname">Full Name:</label>
+            <input type="text" id="fullname" name="fullname" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="email">Email Address:</label>
+            <input type="email" id="email" name="email" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="subject">Subject:</label>
+            <input type="text" id="subject" name="subject" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="message">Your Message:</label>
+            <textarea id="message" name="message" required></textarea>
+          </div>
+          
+          <button type="submit">Send Message</button>
+        </form>
+        
+        <div id="responseMessage" class="response-message"></div>
+      </div>
+    </main>
+
+    <footer>
+      <p>&copy; 2024 Node.js + EJS Server. CORS enabled for all domains.</p>
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById('contactForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = {
+        fullname: document.getElementById('fullname').value,
+        email: document.getElementById('email').value,
+        subject: document.getElementById('subject').value,
+        message: document.getElementById('message').value
+      };
+      
+      try {
+        const response = await fetch('/submit-contact', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        const messageDiv = document.getElementById('responseMessage');
+        messageDiv.textContent = result.message;
+        messageDiv.className = 'response-message success';
+        messageDiv.style.display = 'block';
+        
+        // Reset form
+        e.target.reset();
+        
+        // Hide message after 5 seconds
+        setTimeout(() => {
+          messageDiv.style.display = 'none';
+        }, 5000);
+      } catch (error) {
+        const messageDiv = document.getElementById('responseMessage');
+        messageDiv.textContent = 'Error submitting form: ' + error.message;
+        messageDiv.className = 'response-message error';
+        messageDiv.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
