@@ -19,8 +19,5 @@
       "src": "/(.*)",
       "dest": "/server.js"
     }
-  ],
-  "env": {
-    "IFRAME_URL": "@IFRAME_URL"
-  }
+  ]
 }
