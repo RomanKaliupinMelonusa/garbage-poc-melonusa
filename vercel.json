@@ -21,6 +21,6 @@
     }
   ],
   "env": {
-    "IFRAME_URL": "@iframe-url"
+    "IFRAME_URL": "@IFRAME_URL"
   }
 }
