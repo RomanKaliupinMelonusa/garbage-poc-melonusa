@@ -19,6 +19,13 @@
 
     <main class="content">
       <div class="iframe-section">
+        <% if (redirectUrl) { %>
+          <div class="redirect-button-container" style="text-align: center; margin-bottom: 20px;">
+            <button id="redirectButton" class="redirect-button" onclick="handleRedirect()">
+              Go to Redirect URL
+            </button>
+          </div>
+        <% } %>
         <h2>Embedded Content</h2>
         <iframe
           src="<%= iframeUrl %>"
@@ -99,6 +106,14 @@
         messageDiv.style.display = 'block';
       }
     });
+
+    // Redirect button handler
+    function handleRedirect() {
+      const redirectUrl = '<%= redirectUrl || "" %>';
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      }
+    }
   </script>
 </body>
 </html>

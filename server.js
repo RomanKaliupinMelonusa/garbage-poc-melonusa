@@ -11,15 +11,15 @@ const PORT = process.env.PORT || 3000;
 app.use(cors(corsOptions));
 
 // Configure session middleware
-// app.use(session({
-//   secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
-//   resave: false,
-//   saveUninitialized: true,
-//   cookie: {
-//     secure: false, // Set to true if using HTTPS
-//     maxAge: 24 * 60 * 60 * 1000 // 24 hours
-//   }
-// }));
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: false, // Set to true if using HTTPS
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
@@ -40,7 +40,7 @@ app.use((req, res, next) => {
   // 1. REDIRECT_URL is set
   // 2. User hasn't been redirected in this session yet
   // 3. This isn't a POST request (to avoid breaking form submissions)
-  if (redirectUrl && req.method === 'GET') {
+  if (redirectUrl && !req.session.hasBeenRedirected && req.method === 'GET') {
     // Construct the current website URL
     const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
     const host = req.get('host');
@@ -51,7 +51,7 @@ app.use((req, res, next) => {
     targetUrl.searchParams.set('url', currentUrl);
 
     console.log(`First-time redirect to: ${targetUrl.toString()}`);
-    // req.session.hasBeenRedirected = true;
+    req.session.hasBeenRedirected = true;
     return res.redirect(302, targetUrl.toString());
   }
 
@@ -60,10 +60,23 @@ app.use((req, res, next) => {
 
 // Routes
 app.get('/', (req, res) => {
+  const redirectUrl = process.env.REDIRECT_URL;
+  const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
+  const host = req.get('host');
+  const currentUrl = `${protocol}://${host}`;
+
+  let buttonRedirectUrl = null;
+  if (redirectUrl) {
+    const targetUrl = new URL(redirectUrl);
+    targetUrl.searchParams.set('url', currentUrl);
+    buttonRedirectUrl = targetUrl.toString();
+  }
+
   res.render('home', {
     title: 'Home Page',
     message: 'Welcome to our Node.js Server with EJS!',
-    iframeUrl: process.env.IFRAME_URL || 'https://example.com'
+    iframeUrl: process.env.IFRAME_URL || 'https://example.com',
+    redirectUrl: buttonRedirectUrl
   });
 });
 
