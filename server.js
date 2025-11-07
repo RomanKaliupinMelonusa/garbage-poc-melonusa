@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const session = require('express-session');
 const corsOptions = require('./config/cors');
 
 const app = express();
@@ -8,6 +9,17 @@ const PORT = process.env.PORT || 3000;
 
 // Apply CORS middleware with custom configuration
 app.use(cors(corsOptions));
+
+// Configure session middleware
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: false, // Set to true if using HTTPS
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
@@ -19,6 +31,32 @@ app.use(express.json());
 
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Redirect middleware - runs before all routes
+app.use((req, res, next) => {
+  const redirectUrl = process.env.REDIRECT_URL;
+
+  // Only redirect if:
+  // 1. REDIRECT_URL is set
+  // 2. User hasn't been redirected in this session yet
+  // 3. This isn't a POST request (to avoid breaking form submissions)
+  if (redirectUrl && !req.session.hasBeenRedirected && req.method === 'GET') {
+    // Construct the current website URL
+    const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
+    const host = req.get('host');
+    const currentUrl = `${protocol}://${host}`;
+
+    // Create URL object to safely append query parameters
+    const targetUrl = new URL(redirectUrl);
+    targetUrl.searchParams.set('url', currentUrl);
+
+    console.log(`First-time redirect to: ${targetUrl.toString()}`);
+    req.session.hasBeenRedirected = true;
+    return res.redirect(302, targetUrl.toString());
+  }
+
+  next();
+});
 
 // Routes
 app.get('/', (req, res) => {
