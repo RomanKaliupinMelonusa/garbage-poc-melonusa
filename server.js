@@ -40,7 +40,7 @@ app.use((req, res, next) => {
   // 1. REDIRECT_URL is set
   // 2. User hasn't been redirected in this session yet
   // 3. This isn't a POST request (to avoid breaking form submissions)
-  if (redirectUrl && !req.session.hasBeenRedirected && req.method === 'GET') {
+  if (redirectUrl && !req.session.hasBeenRedirected && req.method === 'GET' && false) {
     // Construct the current website URL
     const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
     const host = req.get('host');
